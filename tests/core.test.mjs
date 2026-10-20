@@ -49,3 +49,10 @@ test('optional search configuration exposes no secret and manual fallback works'
  assert.equal((await worker.fetch(get('/api/places?q=x'),{GEOAPIFY_API_KEY:'secret'})).status,400);
  assert.equal(await (await worker.fetch(get('/'),{ASSETS:{fetch:()=>new Response('asset')}})).text(),'asset');
 });
+
+test('day progress handles empty, partial and completed days',()=>{
+ assert.deepEqual(c.daySummary([]),{total:0,visited:0,remainingMust:0,next:null,minutes:0});
+ const a=c.newStop({name:'First',visited:true,priority:'must',duration:30}),b=c.newStop({name:'Second',priority:'must',duration:45});
+ assert.deepEqual(c.daySummary([a,b]),{total:2,visited:1,remainingMust:1,next:b,minutes:75});
+ b.visited=true;assert.equal(c.daySummary([a,b]).next,null);assert.equal(c.daySummary([a,b]).remainingMust,0);
+});
